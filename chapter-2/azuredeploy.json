@@ -66,24 +66,24 @@
             }
         }
     },
-    "variables":{
+    "variables": {
         "scriptUrl": "[uri(parameters('_artifactsLocation'),concat('setupenvtools-test.ps1',parameters('_artifactsLocationSasToken')))]",
-        "subnetName": "PentestVMSubnet"
+        "subnetName": "PentestVMSubnet",
+        "bastionSubnetName": "AzureBastionSubnet",
+        "bastionSubnetPrefix": "10.0.1.0/27",
+        "bastionPublicIpName": "bastion-pip"
     },
-    "resources": [    
+    "resources": [
         {
             "type": "Microsoft.Network/publicIPAddresses",
             "apiVersion": "2019-11-01",
-            "name": "pentestvm-pip",
+            "name": "[variables('bastionPublicIpName')]",
             "location": "[parameters('location')]",
-            "tags": {
-                "displayName": "PublicIPAddress"
+            "sku": {
+                "name": "Standard"
             },
             "properties": {
-                "publicIPAllocationMethod": "Dynamic",
-                "dnsSettings": {
-                    "domainNameLabel": "[parameters('vmdns')]"
-                }
+                "publicIPAllocationMethod": "Static"
             }
         },
         {
@@ -94,13 +94,13 @@
             "properties": {
                 "securityRules": [
                     {
-                        "name": "allow_RDP_inbound",
+                        "name": "allow_bastion_inbound",
                         "properties": {
-                            "description": "Allow RDP Inbound",
+                            "description": "Allow Bastion Inbound",
                             "protocol": "Tcp",
                             "sourcePortRange": "*",
                             "destinationPortRange": "3389",
-                            "sourceAddressPrefix": "*",
+                            "sourceAddressPrefix": "10.0.1.0/27",
                             "destinationAddressPrefix": "*",
                             "access": "Allow",
                             "priority": 100,
@@ -136,6 +136,12 @@
                                 "id": "[resourceId('Microsoft.Network/networkSecurityGroups', 'pentestvm-nsg')]"
                             }
                         }
+                    },
+                    {
+                        "name": "[variables('bastionSubnetName')]",
+                        "properties": {
+                            "addressPrefix": "[variables('bastionSubnetPrefix')]"
+                        }
                     }
                 ]
             }
@@ -146,7 +152,6 @@
             "name": "pentestvm-nic",
             "location": "[parameters('location')]",
             "dependsOn": [
-                "[resourceId('Microsoft.Network/publicIPAddresses', 'pentestvm-pip')]",
                 "[resourceId('Microsoft.Network/virtualNetworks', 'pentestvm-vnet')]"
             ],
             "tags": {
@@ -158,9 +163,6 @@
                         "name": "ipConfig1",
                         "properties": {
                             "privateIPAllocationMethod": "Dynamic",
-                            "publicIPAddress": {
-                                "id": "[resourceId('Microsoft.Network/publicIPAddresses', 'pentestvm-pip')]"
-                            },
                             "subnet": {
                                 "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', 'pentestvm-vnet', variables('subnetName'))]"
                             }
@@ -174,7 +176,7 @@
             "apiVersion": "2022-03-01",
             "name": "[parameters('vmname')]",
             "location": "[parameters('location')]",
-            "dependsOn": [ 
+            "dependsOn": [
                 "[resourceId('Microsoft.Network/networkInterfaces', 'pentestvm-nic')]"
             ],
             "tags": {
@@ -241,12 +243,49 @@
                     "commandToExecute": "[concat('powershell -ExecutionPolicy Bypass -file setupenvtools-test.ps1 -UserName ',parameters('adminUser'))]"
                 }
             }
+        },
+        {
+            "type": "Microsoft.Network/bastionHosts",
+            "apiVersion": "2020-05-01",
+            "name": "pentestvm-bastion",
+            "location": "[parameters('location')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/publicIPAddresses', variables('bastionPublicIpName'))]",
+                "[resourceId('Microsoft.Network/virtualNetworks', 'pentestvm-vnet')]"
+            ],
+            "properties": {
+                "ipConfigurations": [
+                    {
+                        "name": "bastionConfig",
+                        "properties": {
+                            "publicIPAddress": {
+                                "id": "[resourceId('Microsoft.Network/publicIPAddresses', variables('bastionPublicIpName'))]"
+                            },
+                            "subnet": {
+                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', 'pentestvm-vnet', variables('bastionSubnetName'))]"
+                            }
+                        }
+                    }
+                ]
+            }
         }
     ],
     "outputs": {
-        "pentest-vmdns": {
+        "pentest-vm-name": {
             "type": "string",
-            "value": "[reference(resourceId('Microsoft.Network/publicIPAddresses','pentestvm-pip')).dnsSettings.fqdn]"
+            "value": "[parameters('vmname')]"
+        },
+        "pentest-vm-private-ip": {
+            "type": "string",
+            "value": "[reference(resourceId('Microsoft.Network/networkInterfaces', 'pentestvm-nic')).ipConfigurations[0].properties.privateIPAddress]"
+        },
+        "bastion-host-name": {
+            "type": "string",
+            "value": "pentestvm-bastion"
+        },
+        "connection-instructions": {
+            "type": "string",
+            "value": "To connect to the VM, navigate to the Azure Portal, locate the VM resource, and use the Bastion option from the Operations section."
         }
     }
 }
