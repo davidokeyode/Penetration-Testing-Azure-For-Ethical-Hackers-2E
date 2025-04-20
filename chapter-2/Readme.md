@@ -1,7 +1,7 @@
 # Azure Pentest VM (Windows)
 
-[![Deploy To Azure](https://raw.githubusercontent.com/Azure/azure-quickstart-templates/master/1-CONTRIBUTION-GUIDE/images/deploytoazure.svg?sanitize=true)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fdavidokeyode%2Fazure-cloudsec-practitioner%2Fmain%2Fpentest-vm-win%2Fazuredeploy.json)
-[![Visualize](https://raw.githubusercontent.com/Azure/azure-quickstart-templates/master/1-CONTRIBUTION-GUIDE/images/visualizebutton.svg?sanitize=true)](http://armviz.io/#/?load=https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fdavidokeyode%2Fazure-cloudsec-practitioner%2Fmain%2Fpentest-vm-win%2Fazuredeploy.json)   
+[![Deploy To Azure](https://raw.githubusercontent.com/Azure/azure-quickstart-templates/master/1-CONTRIBUTION-GUIDE/images/deploytoazure.svg?sanitize=true)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fdavidokeyode%2FPenetration-Testing-Azure-For-Ethical-Hackers-2E%2Frefs%2Fheads%2Fmain%2Fchapter-2%2Fazuredeploy.json)
+[![Visualize](https://raw.githubusercontent.com/Azure/azure-quickstart-templates/master/1-CONTRIBUTION-GUIDE/images/visualizebutton.svg?sanitize=true)](http://armviz.io/#/?load=https%3A%2F%2Fraw.githubusercontent.com%2Fdavidokeyode%2FPenetration-Testing-Azure-For-Ethical-Hackers-2E%2Frefs%2Fheads%2Fmain%2Fchapter-2%2Fazuredeploy.json)   
 
 The 'post-deployment' installation custom script extension will take about 15 minutes to complete.
 
