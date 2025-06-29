@@ -1,25 +1,23 @@
-# Load JSON from the exported cookies.json file
+# Define path to cookies.json
 $cookieFile = "$env:USERPROFILE\Downloads\cookies.json"
-if (-Not (Test-Path $cookieFile)) {
-    Write-Error "cookies.json not found in Downloads folder."
+if (-not (Test-Path $cookieFile)) {
+    Write-Error "cookies.json not found in Downloads."
     exit 1
 }
 
-$cookieData = Get-Content $cookieFile -Raw | ConvertFrom-Json
+# Load and parse JSON
+$data = Get-Content $cookieFile -Raw | ConvertFrom-Json
 
-# Build <name>=<value> string separated by semicolons
-$cookieHeader = $cookieData |
-    ForEach-Object {
-        "$($_.name)=$($_.value)"
-    } |
-    Where-Object { $_ -match '^(SID|HSID|SSID|SIDCC)=' } |
-    -join ";"
+# Collect only necessary cookies
+$parts = $data | Where-Object { $_.name -match '^(SID|HSID|SSID|SIDCC)$' } |
+         ForEach-Object { "$($_.name)=$($_.value)" }
 
-if (-Not $cookieHeader) {
-    Write-Error "No Google cookies found in JSON."
+if (-not $parts) {
+    Write-Error "No Google session cookies found."
     exit 1
 }
 
-# Set environment variable for the current session
+# Build header string and set env var
+$cookieHeader = $parts -join ';'
 [Environment]::SetEnvironmentVariable('GOOGLE_COOKIES', $cookieHeader, 'Process')
-Write-Host "GOOGLE_COOKIES set successfully."
+Write-Host "GOOGLE_COOKIES set for this session."
