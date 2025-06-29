@@ -44,7 +44,7 @@ Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Active Setup\Installed Componen
 
 # Batch Install CLI tools - split into smaller, more targeted jobs for faster completion
 Start-Job -Name "CoreTools" -ScriptBlock {
-    choco install googlechrome azure-cli jq -y --limit-output --no-progress
+    choco install googlechrome azure-cli jq -y --limit-output --no-progress --ignore-checksums
 }
 
 Start-Job -Name "DevTools" -ScriptBlock {
@@ -60,8 +60,7 @@ Start-Job -Name "SecurityTools" -ScriptBlock {
 }
 
 Start-Job -Name "PythonSetup" -ScriptBlock {
-    choco install python --version=3.7.2 -y --limit-output --no-progress
-    choco install miniconda3 --version=4.12.0 --params="'/AddToPath:1 /InstallationType:AllUsers /RegisterPython:1'" -y --limit-output --no-progress
+    choco install python -y --limit-output --no-progress
 }
 
 # Split PowerShell modules installation into smaller batches
